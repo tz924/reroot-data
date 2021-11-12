@@ -1,2 +1,4 @@
 libssl-dev
 libudunits2-dev
+libxml2-dev
+libgdal-dev
