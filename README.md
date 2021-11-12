@@ -1,3 +1,5 @@
+http://obscure-gorge-95346.herokuapp.com/
+
 # @get /countries
 - Return a list of countries for use in a dropdown
 
@@ -10,3 +12,6 @@
 - @param industry Industry of work
 - @param industry_imp Importance of industry
 - Returns
+
+# Deploy vis Heroku R Docker Image
+https://github.com/virtualstaticvoid/heroku-docker-r
