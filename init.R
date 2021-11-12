@@ -3,9 +3,9 @@
 
 my_packages = c(
   "plumber", 
-  # "dplyr",
-  # "tidyr",
-  # "future",
+  "dplyr",
+  "tidyr",
+  "future",
   "tidycensus"
 )
 
