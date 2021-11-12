@@ -3,9 +3,9 @@
 
 my_packages = c(
   "plumber", 
-  "dplyr",
-  "tidyr",
-  "future",
+  # "dplyr",
+  # "tidyr",
+  # "future",
   "tidycensus"
 )
 
@@ -13,7 +13,7 @@ my_packages = c(
 # Install packages not yet installed
 install_if_missing = function(p) {
   if (p %in% rownames(installed.packages()) == FALSE) {
-    helpers.installPackages(p)
+    install.packages(p)
   }
 }
 
