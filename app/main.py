@@ -13,11 +13,8 @@ import pandas as pd
 import numpy as np
 from flask import Flask, request
 
-# create the flask app
-app = Flask(__name__)
 
 # import dummy data
-
 sheet_id = "1HFSAcEXK1K8vadOehu7Qf_DFoPrxBP4VCHnOYCPRKoI"
 
 sheet_tab_parameters = "dummy_parameters"
@@ -32,14 +29,8 @@ parameters = pd.read_csv(parameters_url)
 features = pd.read_csv(features_url)
 data = pd.read_csv(data_url)
 
-# testing
-# parameters.head()
-# features.head()
-# data.head()
 
 # calculate scores for all counties given input arguments
-
-
 def scores(args_dict):
 
     parameter_vars = [x for x in args_dict if args_dict[x]]
@@ -47,7 +38,7 @@ def scores(args_dict):
     vars = [x.replace("input_", "") for x in parameter_vars]
 
     ranks = data[rank_vars].values
-    weights = pd.DataFrame([args_dict]).transpose().values
+    weights = pd.DataFrame([args_dict]).astype(int).transpose().values
 
     score_results = data[['county_code',
                           'county_lat', 'county_long']+rank_vars].copy()
@@ -58,43 +49,21 @@ def scores(args_dict):
     return json.dumps(score_results)
 
 
-# testing
-# args_dict = {'input_immigrant_language_arabic': 1,
-#              'input_immigrant_language_chinese': 2}
-# scores(args_dict)
-
-
-@app.route('/scores')
-def get_scores():
-    return scores(request.args)
-
 # get all data for input counties
-
-
 def get_counties(counties):
-    county_results = data[[x in counties for x in data.county_code]]
+    county_results = data[[str(x) in counties for x in data.county_code]]
     county_results = county_results.set_index(
         'county_code').transpose().to_dict()
     return json.dumps(county_results)
 
 
-# testing
-# counties = [10404, 74002]
-# get_counties(counties)
-
-
-@app.route('/counties')
-def return_counties():
-    return get_counties(request.args.get('counties'))
-
 # helper function to convert table to nested dictionary
-
-
 def grouped_to_dict(grouped):
     results = defaultdict(lambda: defaultdict(dict))
 
     for index, value in grouped.itertuples():
         for i, key in enumerate(index):
+            nested = results[key]
             if i == 0:
                 nested = results[key]
             elif i == len(index) - 1:
@@ -104,9 +73,8 @@ def grouped_to_dict(grouped):
 
     return results
 
+
 # get all parameters based on parameters table
-
-
 def get_parameters():
     grouped_data = parameters[['category',
                                'subcategory', 'field', 'variable_name']]
@@ -116,7 +84,29 @@ def get_parameters():
 
 
 # testing
+
+# args_dict = {'input_immigrant_language_arabic': 1,
+#              'input_immigrant_language_chinese': 2}
+# scores(args_dict)
+
+# counties = [10404, 74002]
+# get_counties(counties)
+
 # get_parameters()
+
+# create the flask app
+app = Flask(__name__)
+
+
+@app.route('/scores')
+def get_scores():
+    return scores(request.args)
+
+
+@app.route('/counties')
+def return_counties():
+    return get_counties(request.args.get('counties'))
+
 
 @app.route('/parameters')
 def return_parameters():
