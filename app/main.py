@@ -94,6 +94,16 @@ def get_parameters():
 
 # get_parameters()
 
+# get list of all country codes and all country names
+def get_all_counties():
+    all_county_results = data[['county_code',
+                               'county_name']].to_dict(orient='list')
+    return json.dumps(all_county_results)
+
+# testing
+# get_all_counties()
+
+
 # create the flask app
 app = Flask(__name__)
 
@@ -111,6 +121,11 @@ def return_counties():
 @app.route('/parameters')
 def return_parameters():
     return get_parameters()
+
+
+@app.route('/all_counties')
+def return_all_counties():
+    return get_all_counties()
 
 
 if __name__ == '__main__':
