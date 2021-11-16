@@ -75,7 +75,7 @@ def grouped_to_dict(grouped):
 
 
 # get all parameters based on parameters table
-def get_parameters():
+def get_factors():
     grouped_data = parameters[['category',
                                'subcategory', 'field', 'variable_name']]
     grouped_data = grouped_data.groupby(['category', 'subcategory', 'field']).agg(
@@ -118,9 +118,9 @@ def return_counties():
     return get_counties(request.args.get('counties'))
 
 
-@app.route('/parameters')
-def return_parameters():
-    return get_parameters()
+@app.route('/factors')
+def return_factors():
+    return get_factors()
 
 
 @app.route('/all_counties')
