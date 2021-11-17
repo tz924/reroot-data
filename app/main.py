@@ -29,9 +29,10 @@ parameters = pd.read_csv(parameters_url)
 features = pd.read_csv(features_url)
 data = pd.read_csv(data_url)
 
-
 # calculate scores for all counties given input arguments
-def scores(args_dict):
+
+
+def get_scores(args_dict):
 
     parameter_vars = [x for x in args_dict if args_dict[x]]
     rank_vars = [x.replace("input_", "rank_") for x in parameter_vars]
@@ -63,7 +64,6 @@ def grouped_to_dict(grouped):
 
     for index, value in grouped.itertuples():
         for i, key in enumerate(index):
-            nested = results[key]
             if i == 0:
                 nested = results[key]
             elif i == len(index) - 1:
@@ -75,7 +75,7 @@ def grouped_to_dict(grouped):
 
 
 # get all parameters based on parameters table
-def get_factors():
+def get_parameters():
     grouped_data = parameters[['category',
                                'subcategory', 'field', 'variable_name']]
     grouped_data = grouped_data.groupby(['category', 'subcategory', 'field']).agg(
@@ -83,25 +83,11 @@ def get_factors():
     return json.dumps(grouped_to_dict(grouped_data))
 
 
-# testing
-
-# args_dict = {'input_immigrant_language_arabic': 1,
-#              'input_immigrant_language_chinese': 2}
-# scores(args_dict)
-
-# counties = [10404, 74002]
-# get_counties(counties)
-
-# get_parameters()
-
 # get list of all country codes and all country names
 def get_all_counties():
     all_county_results = data[['county_code',
                                'county_name']].to_dict(orient='list')
     return json.dumps(all_county_results)
-
-# testing
-# get_all_counties()
 
 
 # create the flask app
@@ -109,8 +95,8 @@ app = Flask(__name__)
 
 
 @app.route('/scores')
-def get_scores():
-    return scores(request.args)
+def return_scores():
+    return get_scores(request.args)
 
 
 @app.route('/counties')
@@ -118,9 +104,9 @@ def return_counties():
     return get_counties(request.args.get('counties'))
 
 
-@app.route('/factors')
-def return_factors():
-    return get_factors()
+@app.route('/parameters')
+def return_parameters():
+    return get_parameters()
 
 
 @app.route('/all_counties')
