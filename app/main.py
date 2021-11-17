@@ -53,7 +53,7 @@ app = Flask(__name__)
 
 
 @app.route('/scores')
-def return_scores():
+def scores():
     """
     calculate scores for all counties given input arguments
     """
@@ -75,7 +75,7 @@ def return_scores():
 
 
 @app.route('/counties')
-def return_counties():
+def counties():
     """
     # get all data for input counties
     """
@@ -86,8 +86,8 @@ def return_counties():
     return jsonify(county_results)
 
 
-@app.route('/parameters')
-def return_parameters():
+@app.route('/factors')
+def factors():
     """
     get all parameters based on parameters table
     """
