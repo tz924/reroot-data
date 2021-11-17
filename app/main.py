@@ -54,16 +54,16 @@ def normalize_query(params):
     return {k: normalize_query_param(v) for k, v in params_non_flat.items()}
 
 
-def get_scores(args_dict):
+def get_scores(request):
     """
     calculate scores for all counties given input arguments
     """
-    parameter_vars = [x for x in args_dict if args_dict[x]]
+    parameter_vars = [x for x in request if request[x]]
     rank_vars = [x.replace("input_", "rank_") for x in parameter_vars]
     vars = [x.replace("input_", "") for x in parameter_vars]
 
     ranks = data[rank_vars].values
-    weights = pd.DataFrame([args_dict]).astype(int).transpose().values
+    weights = pd.DataFrame([request]).astype(int).transpose().values
 
     score_results = data[['county_code',
                           'county_lat', 'county_long']+rank_vars].copy()
@@ -76,16 +76,11 @@ def get_scores(args_dict):
 
 # get all data for input counties
 def get_counties(request):
-    if request.method == 'POST':
-        post = request.getjson()
-        codes = post['codes']
-
-        county_results = data[[str(x) in codes for x in data.county_code]]
-        county_results = county_results.set_index(
-            'county_code').transpose().to_dict()
-        return jsonify(county_results)
-    else:
-        return jsonify({"error": "only POST supported"})
+    counties = request.get('counties')
+    county_results = data[[str(x) in counties for x in data.county_code]]
+    county_results = county_results.set_index(
+        'county_code').transpose().to_dict()
+    return jsonify(county_results)
 
 
 # helper function to convert table to nested dictionary
@@ -115,7 +110,8 @@ def get_parameters():
 
 # get list of all country codes and all country names
 def get_all_counties():
-    all_county_results = data[['county_code']].to_dict(orient='list')
+    all_county_results = data[['county_code',
+                               'county_name']].to_dict(orient='list')
     return json.dumps(all_county_results)
 
 
@@ -123,22 +119,22 @@ def get_all_counties():
 app = Flask(__name__)
 
 
-@app.route('/scores', methods=['GET', 'POST'])
+@app.route('/scores')
 def return_scores():
     return get_scores(request.args)
 
 
-@app.route('/counties', methods=['GET', 'POST'])
+@app.route('/counties')
 def return_counties():
     return get_counties(request.args)
 
 
-@app.route('/parameters', methods=['GET', 'POST'])
+@app.route('/parameters')
 def return_parameters():
     return get_parameters()
 
 
-@app.route('/all_counties', methods=['GET', 'POST'])
+@app.route('/all_counties')
 def return_all_counties():
     return get_all_counties()
 
