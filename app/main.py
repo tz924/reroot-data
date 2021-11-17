@@ -30,30 +30,6 @@ features = pd.read_csv(features_url)
 data = pd.read_csv(data_url)
 
 
-def normalize_query_param(value):
-    """
-    Given a non-flattened query parameter value,
-    and if the value is a list only containing 1 item,
-    then the value is flattened.
-
-    :param value: a value from a query parameter
-    :return: a normalized query parameter value
-    """
-    return value if len(value) > 1 else value[0]
-
-
-def normalize_query(params):
-    """
-    Converts query parameters from only containing one value for each parameter,
-    to include parameters with multiple values as lists.
-
-    :param params: a flask query parameters data structure
-    :return: a dict of normalized query parameters
-    """
-    params_non_flat = params.to_dict(flat=False)
-    return {k: normalize_query_param(v) for k, v in params_non_flat.items()}
-
-
 def grouped_to_dict(grouped):
     """
     helper function to convert table to nested dictionary
@@ -81,13 +57,13 @@ def return_scores():
     """
     calculate scores for all counties given input arguments
     """
-    inputs = request.args
-    parameter_vars = [x for x in inputs if inputs[x]]
+    args_dict = request.args
+    parameter_vars = [x for x in args_dict if args_dict[x]]
     rank_vars = [x.replace("input_", "rank_") for x in parameter_vars]
     vars = [x.replace("input_", "") for x in parameter_vars]
 
     ranks = data[rank_vars].values
-    weights = pd.DataFrame([request]).astype(int).transpose().values
+    weights = pd.DataFrame([args_dict]).astype(int).transpose().values
 
     score_results = data[['county_code',
                           'county_lat', 'county_long']+rank_vars].copy()
