@@ -76,15 +76,16 @@ def get_scores(args_dict):
 
 # get all data for input counties
 def get_counties(request):
-    if not request.get('codes'):
-        return jsonify({"error": "enter valid county codes"})
-    codes = request.get('codes')
-    print(codes)
+    if request.method == 'POST':
+        post = request.getjson()
+        codes = post['codes']
 
-    county_results = data[[str(x) in codes for x in data.county_code]]
-    county_results = county_results.set_index(
-        'county_code').transpose().to_dict()
-    return jsonify(county_results)
+        county_results = data[[str(x) in codes for x in data.county_code]]
+        county_results = county_results.set_index(
+            'county_code').transpose().to_dict()
+        return jsonify(county_results)
+    else:
+        return jsonify({"error": "only POST supported"})
 
 
 # helper function to convert table to nested dictionary
@@ -122,7 +123,7 @@ def get_all_counties():
 app = Flask(__name__)
 
 
-@app.route('/scores')
+@app.route('/scores', methods=['GET', 'POST'])
 def return_scores():
     return get_scores(request.args)
 
@@ -132,12 +133,12 @@ def return_counties():
     return get_counties(request.args)
 
 
-@app.route('/parameters')
+@app.route('/parameters', methods=['GET', 'POST'])
 def return_parameters():
     return get_parameters()
 
 
-@app.route('/all_counties')
+@app.route('/all_counties', methods=['GET', 'POST'])
 def return_all_counties():
     return get_all_counties()
 
