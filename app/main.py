@@ -11,7 +11,7 @@ from collections import defaultdict
 import json
 import pandas as pd
 import numpy as np
-from flask import Flask, request, jsonify
+from flask import Flask, request, render_template
 
 
 def load_data():
@@ -61,6 +61,11 @@ def grouped_to_dict(grouped):
 
 # create the flask app
 app = Flask(__name__)
+
+
+@app.route('/')
+def index():
+    return render_template('README.html')
 
 
 @app.route('/scores')
