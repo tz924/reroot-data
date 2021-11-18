@@ -4,14 +4,14 @@ For pulling all relevant data for reROOT web app.
 
 Based on colab notebook [here](https://colab.research.google.com/drive/1lDnCKAO62lo14QebxrLzSishJpxop0oU).
 
-## /parameters
+## `/factors`
 
 Returns a list of all user input parameters. These are the parameters used to calculated the reROOT score.
 
 
 ### Illustrative response
 
-```javascript
+```json
 {
   "diversity": {
     "cultural": "diversity_cultural",
@@ -69,7 +69,7 @@ Returns a list of all user input parameters. These are the parameters used to ca
 }
 ```
 
-## /scores
+## `/scores`
 
 Returns final reROOT score for all counties, as well as breakdown of the scores. All the breakdown variables will sum up to the score . 
 
@@ -86,7 +86,7 @@ For example:
 
 ### Illustrative response
 
-```javascript
+```json
 {
   "00001": {
     "score": 1.21,
@@ -102,7 +102,7 @@ For example:
 }
 ```
 
-## /counties
+## `/counties`
 
 Returns all relevant information for an individual or list of counties.
 
@@ -114,7 +114,7 @@ For example:
 
 ### Illustrative response
 
-```javascript
+```json
 {
   "00001": {
     "county_name": "Autauga County, Alabama",
@@ -136,13 +136,13 @@ For example:
 }
 ```
 
-## /all_counties
+## `/all_counties`
 
 Returns all county codes and county names.
 
 ### Illustrative response
 
-```javascript
+```json
 {
   "county_code": [
     "00001",

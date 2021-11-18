@@ -14,20 +14,30 @@ import numpy as np
 from flask import Flask, request, jsonify
 
 
-# import dummy data
-sheet_id = "1HFSAcEXK1K8vadOehu7Qf_DFoPrxBP4VCHnOYCPRKoI"
+def load_data():
+    """
+    import dummy data
+    """
+    sheet_id = "1HFSAcEXK1K8vadOehu7Qf_DFoPrxBP4VCHnOYCPRKoI"
 
-sheet_tab_parameters = "dummy_parameters"
-sheet_tab_features = "dummy_features"
-sheet_tab_data = "dummy_data"
+    sheet_tab_parameters = "dummy_parameters"
+    sheet_tab_features = "dummy_features"
+    sheet_tab_data = "dummy_data"
 
-parameters_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_parameters}"
-features_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_features}"
-data_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_data}"
+    parameters_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_parameters}"
+    features_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_features}"
+    data_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_data}"
 
-parameters = pd.read_csv(parameters_url)
-features = pd.read_csv(features_url)
-data = pd.read_csv(data_url)
+    parameters = pd.read_csv(parameters_url)
+    features = pd.read_csv(features_url)
+    data = pd.read_csv(data_url)
+
+    data['county_code'] = data['county_code'].apply(
+        lambda x: '{0:0>5}'.format(x))
+    return parameters, features, data
+
+
+parameters, features, data = load_data()
 
 
 def grouped_to_dict(grouped):
@@ -37,6 +47,7 @@ def grouped_to_dict(grouped):
     results = defaultdict(lambda: defaultdict(dict))
 
     for index, value in grouped.itertuples():
+        index = tuple([x for x in index if not pd.isna(x)])
         for i, key in enumerate(index):
             if i == 0:
                 nested = results[key]
@@ -44,10 +55,10 @@ def grouped_to_dict(grouped):
                 nested[key] = value
             else:
                 nested = nested[key]
+
     return results
 
 
-    #
 # create the flask app
 app = Flask(__name__)
 
@@ -58,18 +69,18 @@ def scores():
     calculate scores for all counties given input arguments
     """
     args_dict = request.args
-    parameter_vars = [x for x in args_dict if args_dict[x]]
-    rank_vars = [x.replace("input_", "rank_") for x in parameter_vars]
-    vars = [x.replace("input_", "") for x in parameter_vars]
+    vars = [x for x in args_dict if x+'_rank' in data.columns.values]
+    rank_vars = [x+'_rank' for x in args_dict if x +
+                 '_rank' in data.columns.values]
 
     ranks = data[rank_vars].values
     weights = pd.DataFrame([args_dict]).astype(int).transpose().values
 
-    score_results = data[['county_code',
-                          'county_lat', 'county_long']+rank_vars].copy()
+    score_results = data[['county_code']].copy()
     score_results['score'] = np.matmul(ranks, weights)
-    score_results = score_results.sort_values(
-        'score', ascending=False).to_dict('records')
+    score_results[vars] = ranks * np.transpose(weights)
+
+    score_results = score_results.set_index('county_code').to_dict('index')
 
     return json.dumps(score_results)
 
@@ -77,13 +88,29 @@ def scores():
 @app.route('/counties')
 def counties():
     """
-    # get all data for input counties
+    get all data for input counties
     """
     counties = request.args.get('counties')
-    county_results = data[[str(x) in counties for x in data.county_code]]
+    county_results = data[[
+        str(x) in counties for x in data.county_code]].copy()
+
+    county_results['coordinates'] = county_results[[
+        'county_lat', 'county_long']].values.tolist()
+
+    rank_detail_vars = [x for x in data.columns if '_rank' in x]
+    county_results['rank_details'] = county_results[rank_detail_vars].to_dict(
+        'records')
+
+    county_detail_vars = [x for x in data.columns if ('_count' in x) | (
+        '_median' in x) | ('_index' in x) | ('_percentage' in x)]
+    county_results['county_details'] = county_results[county_detail_vars].to_dict(
+        'records')
+
+    county_results = county_results[[
+        'county_code', 'county_name', 'coordinates', 'county_details', 'rank_details']]
     county_results = county_results.set_index(
         'county_code').transpose().to_dict()
-    return jsonify(county_results)
+    return json.dumps(county_results)
 
 
 @app.route('/factors')
@@ -93,8 +120,8 @@ def factors():
     """
     grouped_data = parameters[['category',
                                'subcategory', 'field', 'variable_name']]
-    grouped_data = grouped_data.groupby(['category', 'subcategory', 'field']).agg(
-        variable=('variable_name', 'max'))
+    grouped_data = grouped_data.groupby(
+        ['category', 'subcategory', 'field'], dropna=False).agg(variable=('variable_name', 'max'))
     return json.dumps(grouped_to_dict(grouped_data))
 
 
