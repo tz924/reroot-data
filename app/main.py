@@ -9,6 +9,7 @@ import json
 import pandas as pd
 import numpy as np
 from flask import Flask, request, render_template
+from flask_cors import CORS
 # import dummy data
 
 
@@ -113,7 +114,12 @@ def get_all_counties():
 
 # create the flask app
 app = Flask(__name__)
-
+CORS(app)
+cors = CORS(app, resource={
+    r"/*": {
+        "origins": "*"
+    }
+})
 
 @app.route('/')
 def return_index():
