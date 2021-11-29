@@ -12,6 +12,8 @@ from flask import Flask, request, render_template
 from flask_cors import CORS
 # import dummy data
 
+PER_PAGE = 10
+
 
 def load_data():
     sheet_id = "1HFSAcEXK1K8vadOehu7Qf_DFoPrxBP4VCHnOYCPRKoI"
@@ -66,6 +68,18 @@ def get_parameters():
 
 
 def get_scores(args_dict):
+
+    # prep for pagination
+    pagination = False
+    page = 0
+
+    if "page" in args_dict:
+        page = int(args_dict["page"])
+
+        pagination = True
+        args_dict = {k: v for k, v in args_dict.items() if k != "page"}
+
+    # data processing
     vars = [x for x in args_dict if x+'_rank' in data.columns.values]
     rank_vars = [x+'_rank' for x in args_dict if x +
                  '_rank' in data.columns.values]
@@ -80,6 +94,20 @@ def get_scores(args_dict):
     score_results = score_results.drop(vars, 1)
     score_results = score_results.sort_values(
         'score', ascending=False).to_dict('records')
+
+    # infinite load and pagination logic
+    if pagination:
+        if page < 1:
+            return ({"error": "page starts at 1"})
+        end_i = page * PER_PAGE
+        start_i = PER_PAGE * (page - 1)
+        max_i = len(score_results)
+        if end_i > max_i:
+            if end_i - max_i < PER_PAGE:
+                return json.dumps({"scores": score_results[start_i: max_i]})
+            return {"error": "max_reached"}
+        return json.dumps({"scores": score_results[start_i: end_i]})
+
     return json.dumps({"scores": score_results})
 # get all data for input county
 
@@ -120,6 +148,7 @@ cors = CORS(app, resource={
         "origins": "*"
     }
 })
+
 
 @app.route('/')
 def return_index():
