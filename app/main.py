@@ -201,7 +201,12 @@ def get_scores(args_dict):
     score_results = score_results.drop(vars, 1)
 
     score_results = score_results.sort_values(
-        'score', ascending=False).to_dict('records')
+        'score', ascending=False)
+
+    score_results = score_results.reset_index()
+    score_results["ranking"] = score_results.index + 1
+
+    score_results = score_results.to_dict('records')
 
     # infinite load and pagination logic
     if pagination:
@@ -223,7 +228,7 @@ def get_scores(args_dict):
 # get_scores({
 #     "affordability_mortgage": 3,
 #     "community_language_chinese": 3
-# })
+# });
 
 # %%
 
