@@ -143,7 +143,6 @@ def get_counties():
 # TEST Testing
 # json.loads(get_counties())
 
-# %%
 
 # %%
 
@@ -169,7 +168,7 @@ def get_scores(args_dict):
 
     ranks = data[rank_vars].values
     weights = pd.DataFrame([args_dict]).astype(int).transpose().values
-    breakdowns = r(2)(ranks * np.transpose(weights) / weights.sum())
+    breakdowns = r(2)(ranks * np.transpose(weights) / weights.sum() * 100)
 
     # format code and name
     score_results = data[['county_code', 'county_name']].copy()
@@ -211,11 +210,12 @@ def get_scores(args_dict):
 
     return json.dumps({"scores": score_results})
 
+
 # TEST /scores
-# get_scores({
-    # "affordability_mortgage": 3,
-    # "community_language_chinese": 3
-# })
+get_scores({
+    "affordability_mortgage": 3,
+    "community_language_chinese": 3
+})
 
 # %%
 
