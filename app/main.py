@@ -9,6 +9,7 @@ from collections import defaultdict
 import json
 import pandas as pd
 import numpy as np
+from math import isnan
 from flask import Flask, request, render_template, abort, jsonify
 from flask_cors import CORS
 # import dummy data
@@ -84,6 +85,13 @@ def get_factors():
 def get_parameters():
     # returns a lookup table for parameters
     parameters_dict = parameters.set_index('data_variable').to_dict('index')
+    for param in parameters_dict.values():
+        for k, v in param.items():
+            try:
+                if isnan(v):
+                    param[k] = None
+            except:
+                pass
     return json.dumps(parameters_dict)
 
 
@@ -212,10 +220,10 @@ def get_scores(args_dict):
 
 
 # TEST /scores
-get_scores({
-    "affordability_mortgage": 3,
-    "community_language_chinese": 3
-})
+# get_scores({
+#     "affordability_mortgage": 3,
+#     "community_language_chinese": 3
+# })
 
 # %%
 
