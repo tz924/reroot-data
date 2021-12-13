@@ -169,6 +169,11 @@ def get_scores(args_dict):
         pagination = True
         args_dict = {k: v for k, v in args_dict.items() if k != "page"}
 
+    query = ""
+    if "query" in args_dict:
+        query = args_dict["query"]
+        args_dict = {k: v for k, v in args_dict.items() if k != "query"}
+
     # data processing
     vars = [x for x in args_dict if x+'_rank' in data.columns.values]
     rank_vars = [x+'_rank' for x in args_dict if x +
@@ -208,6 +213,11 @@ def get_scores(args_dict):
 
     score_results = score_results.to_dict('records')
 
+    # query filter
+    scores_filtered = filter(lambda c: query.lower()
+                        in c["name"].lower(), score_results)
+    score_results = list(scores_filtered)
+
     # infinite load and pagination logic
     if pagination:
         if page < 1:
@@ -227,8 +237,9 @@ def get_scores(args_dict):
 # TEST /scores
 # get_scores({
 #     "affordability_mortgage": 3,
-#     "community_language_chinese": 3
-# });
+#     "community_language_chinese": 3,
+#     "query": "san f"
+# })
 
 # %%
 
