@@ -18,12 +18,12 @@ PER_PAGE = 10
 
 
 def load_data():
-    # import dummy data
+    # import data
     sheet_id = "1HFSAcEXK1K8vadOehu7Qf_DFoPrxBP4VCHnOYCPRKoI"
 
-    sheet_tab_parameters = "dummy_parameters"
-    sheet_tab_stats = "dummy_stats"
-    sheet_tab_data = "dummy_data"
+    sheet_tab_parameters = "parameters"
+    sheet_tab_stats = "stats"
+    sheet_tab_data = "data"
 
     parameters_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_parameters}"
     stats_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_tab_stats}"
@@ -215,7 +215,7 @@ def get_scores(args_dict):
 
     # query filter
     scores_filtered = filter(lambda c: query.lower()
-                        in c["name"].lower(), score_results)
+                             in c["name"].lower(), score_results)
     score_results = list(scores_filtered)
 
     # infinite load and pagination logic
